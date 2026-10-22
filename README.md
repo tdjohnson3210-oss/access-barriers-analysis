@@ -1,6 +1,6 @@
-# Access Barrier Index Analysis
+# Access Barrier and Civil Fillings Analysis
 
-This repository contains data, code, notebooks, and documentation used to analyze transportation and access barriers using American Community Survey (ACS), RUCA, and civil court filing data.
+This repository contains data, code, notebooks, and documentation used to examine transportation barriers, access-to-justice challenges, and civil court participation using American Community Survey (ACS), RUCA, and Washington civil court filing data.
 
 ## Repository Structure
 
@@ -8,10 +8,10 @@ This repository contains data, code, notebooks, and documentation used to analyz
 access-barriers-analysis/
 ├── data_raw/              # Original source datasets
 ├── data_processed/        # Processed and merged datasets
-├── notebooks/            # Jupyter notebooks
-├── scripts/              # Data preparation scripts
-├── metadata/             # Data dictionaries and documentation
-├── docs/                 # Project documentation
+├── notebooks/             # Jupyter notebooks
+├── scripts/               # Data preparation scripts
+├── metadata/              # Data dictionaries and documentation
+├── docs/                  # Project documentation
 └── README.md
 ```
 
@@ -19,7 +19,7 @@ access-barriers-analysis/
 
 ### Primary Dataset
 
-The primary dataset contains tract-level indicators related to:
+The primary dataset contains indicators related to:
 
 - Transportation barriers
 - Digital access
@@ -28,13 +28,13 @@ The primary dataset contains tract-level indicators related to:
 - Language barriers
 - Household vulnerability
 - Residential mobility
-- Geographic and rurality characteristics
+- Population and rurality characteristics
 
 ### Secondary Dataset
 
-The secondary dataset contains court activity measures, including:
+The secondary dataset contains county-level court activity measures, including:
 
-- New filings
+- Civil filings
 - Self-represented litigant cases
 - Interpreter usage
 - Incoming and outgoing cases
@@ -42,8 +42,6 @@ The secondary dataset contains court activity measures, including:
 - Total dispositions
 
 ## Loading the Primary Dataset
-
-If the primary dataset has been split into multiple parquet files, load and combine them as follows:
 
 ```python
 import pandas as pd
@@ -87,62 +85,61 @@ df_secondary = pd.read_parquet(
 print(df_secondary.shape)
 ```
 
-## Transportation Barrier Modeling
+## Modeling Approach
 
-Two models were developed:
+### Model 1: Civil Filings Regression
 
-### Model 1: Transportation Relationship Model
+**Model Type:** Multiple Linear Regression
 
-- Model Type: Multiple Linear Regression
-- Target: Transportation Barrier Score
-- Predictors:
-  - Digital Score
-  - Education Score
-  - Language Score
-  - Disability Score
-  - Household Score
-  - Mobility Score
+**Target Variable**
+- Civil Filings
+
+**Predictors**
+- Transportation Score
+- Digital Score
+- Education Score
+- Language Score
+- Disability Score
+- Household Score
+- Mobility Score
+- Population
+- Population Density
+- RUCA
+
+**Key Results**
+- R² = 0.945
+- MAE = 371
+- RMSE = 562
+- Population and rurality were significant predictors of civil filings.
+- Transportation barriers were not a statistically significant independent predictor after controlling for other variables.
+
+---
 
 ### Model 2: Transportation Risk Classification
 
-- Model Type: Random Forest Classifier
-- Target: Transportation Risk Category
-- Predictors:
-  - Digital Score
-  - Education Score
-  - Language Score
-  - Disability Score
-  - Household Score
-  - Mobility Score
+**Model Type:** Random Forest Classification
 
-Transportation risk categories were created using:
+**Target Variable**
+- Transportation Risk Category
 
-```python
-pd.qcut(
-    transportation_score,
-    q=5,
-    labels=[
-        "Very Low",
-        "Low",
-        "Moderate",
-        "High",
-        "Very High"
-    ]
-)
-```
+**Predictors**
+- Digital Score
+- Education Score
+- Language Score
+- Disability Score
+- Household Score
+- Mobility Score
+
+**Key Results**
+- Accuracy = 75%
+- Digital barriers were the strongest predictor of transportation risk.
+- Education, household, and mobility barriers also contributed substantially to classification performance.
+- Most classification errors occurred between neighboring transportation risk categories.
 
 ## Key Findings
 
-- Transportation barriers are strongly associated with digital, household, and education barriers.
-- Transportation barriers rarely occur in isolation.
-- Digital barriers were the strongest predictor of transportation risk.
-- Transportation risk could be classified with approximately 65% accuracy.
-- Transportation appears to be part of broader patterns of structural disadvantage.
-
-## Future Work
-
-Future development may include:
-
-- Transportation risk mapping
-- Interactive dashboards
-- Additional Models and Tuning
+- Transportation barriers were strongly associated with digital and educational barriers.
+- Transportation barriers did not independently predict civil filings after controlling for geographic and demographic factors.
+- Population and rurality were the strongest predictors of filing activity.
+- Transportation risk could be classified with 75% accuracy using other access-related barriers.
+- Transportation disadvantage appears to be part of a broader pattern of access-related challenges rather than an isolated barrier.
