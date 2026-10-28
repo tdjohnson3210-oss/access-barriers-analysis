@@ -192,3 +192,176 @@ with profile_col:
         interpretation will appear here.
         """
     )
+
+
+# County Comparison ----
+st.markdown("### COUNTY COMPARISON")
+
+st.subheader(
+    "Compare With Similar Communities"
+)
+
+st.caption(
+    "Access scores for counties with similar geographic and community characteristics"
+)
+
+comparison_df = pd.DataFrame(
+    {
+        "County": [
+            "Adams",
+            selected_county,
+            "Franklin",
+            "Grant",
+            "Douglas"
+        ],
+        "Score": [
+            79,
+            74,
+            67,
+            65,
+            64
+        ]
+    }
+)
+
+st.bar_chart(
+    comparison_df.set_index("County")
+)
+
+
+# Community Context ----
+st.markdown("### COMMUNITY CONTEXT")
+
+st.subheader(
+    "Factors Associated With Access Barriers"
+)
+
+st.caption(
+    "Conditions that may shape how easily residents can reach and use court services."
+)
+
+factor1, factor2, factor3, factor4, factor5 = st.columns(5)
+
+with factor1:
+    st.info(
+        """
+        **Transportation Availability**
+
+        Access to public transit and
+        reliable transportation.
+        """
+    )
+
+with factor2:
+    st.info(
+        """
+        **Geographic Isolation**
+
+        Travel distance and natural
+        geographic constraints.
+        """
+    )
+
+with factor3:
+    st.info(
+        """
+        **Rural Accessibility**
+
+        Ability to reach services from
+        rural communities.
+        """
+    )
+
+with factor4:
+    st.info(
+        """
+        **Service Proximity**
+
+        Distance to courthouses and
+        legal assistance.
+        """
+    )
+
+with factor5:
+    st.info(
+        """
+        **Community Characteristics**
+
+        Local conditions that affect
+        service access.
+        """
+    )
+
+
+# Key Insights ----
+st.markdown("### DECISION SUPPORT")
+
+st.subheader(
+    f"Key Insights for {selected_county} County"
+)
+
+insight_col1, insight_col2, insight_col3 = st.columns(3)
+
+with insight_col1:
+    st.success(
+        """
+        This county exhibits higher
+        access barriers than the
+        statewide average.
+        """
+    )
+
+with insight_col2:
+    st.success(
+        """
+        Transportation and geographic
+        factors appear to contribute
+        to the county profile.
+        """
+    )
+
+with insight_col3:
+    st.success(
+        """
+        Comparable counties demonstrate
+        similar accessibility patterns
+        and may provide useful
+        planning comparisons.
+        """
+    )
+
+
+# About the Model ----
+with st.expander(
+    "About the Model",
+    expanded=False
+):
+
+    st.markdown(
+        """
+        ### Project Purpose
+
+        This dashboard is designed to support
+        exploration of potential access-to-justice
+        barriers across Washington State communities.
+
+        ### Data Sources
+
+        Placeholder
+
+        ### Methodology
+
+        Placeholder
+
+        ### Model Limitations
+
+        Placeholder
+
+        ### Intended Use
+
+        This tool is intended to support research,
+        planning, and discussion. Results should not
+        be interpreted as definitive measures of
+        individual community needs.
+        """
+    )
