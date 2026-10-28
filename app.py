@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
 
 st.set_page_config(
     page_title="Access Barriers Analysis Dashboard",
@@ -94,191 +93,49 @@ with col4:
     )
 
 # --------------------------------------------------
-# COUNTY PROFILE
+# MAP + BARRIER PROFILE
 # --------------------------------------------------
 
 st.divider()
 
-left_col, right_col = st.columns([3, 1])
+map_col, barrier_col = st.columns([4, 1])
 
-with left_col:
+with map_col:
 
     st.subheader(
-        "County Comparison"
+        "Access Barriers Across Washington"
     )
 
-    comparison_df = (
-        dashboard_df[
-            dashboard_df["year"] == selected_year
-        ]
-        .sort_values(
-            "actual_civil_filings",
-            ascending=True
-        )
+    st.info(
+        "Washington county choropleth map coming soon."
     )
 
-    fig = px.bar(
-        comparison_df,
-        x="actual_civil_filings",
-        y="county",
-        orientation="h",
-        height=1000
-    )
-
-    st.plotly_chart(
-        fig,
-        use_container_width=True
-    )
-
-with right_col:
+with barrier_col:
 
     st.subheader(
-        "County Profile"
+        "Barrier Profile"
     )
 
-    st.write("**Community Type**")
-    st.write(
-        county_data["community_type"]
-    )
+    score_fields = [
+        ("Transportation", "transportation_score_display"),
+        ("Digital", "digital_score_display"),
+        ("Education", "education_score_display"),
+        ("Language", "language_score_display"),
+        ("Disability", "disability_score_display"),
+        ("Household", "household_score_display"),
+        ("Mobility", "mobility_score_display")
+    ]
 
-    st.write("**Population**")
-    st.write(
-        f"{county_data['population_actual']:,.0f}"
-    )
+    for label, column in score_fields:
 
-    st.write("**Population Density**")
-    st.write(
-        f"{county_data['popdensity_actual']:,.1f}"
-    )
+        if column in county_data.index:
 
-    st.write("**RUCA Score**")
-    st.write(
-        round(
-            county_data["primaryruca_actual"],
-            1
-        )
-    )
-
-# --------------------------------------------------
-# BARRIER SCORES
-# --------------------------------------------------
-
-st.divider()
-
-st.subheader(
-    "Barrier Scores (0-100)"
-)
-
-col1, col2, col3, col4, col5, col6, col7 = st.columns(7)
-
-with col1:
-    st.metric(
-        "Transportation",
-        county_data[
-            "transportation_score_display"
-        ]
-    )
-
-with col2:
-    st.metric(
-        "Digital",
-        county_data[
-            "digital_score_display"
-        ]
-    )
-
-with col3:
-    st.metric(
-        "Education",
-        county_data[
-            "education_score_display"
-        ]
-    )
-
-with col4:
-    st.metric(
-        "Language",
-        county_data[
-            "language_score_display"
-        ]
-    )
-
-with col5:
-    st.metric(
-        "Disability",
-        county_data[
-            "disability_score_display"
-        ]
-    )
-
-with col6:
-    st.metric(
-        "Household",
-        county_data[
-            "household_score_display"
-        ]
-    )
-
-with col7:
-    st.metric(
-        "Mobility",
-        county_data[
-            "mobility_score_display"
-        ]
-    )
-
-# --------------------------------------------------
-# INSIGHTS
-# --------------------------------------------------
-
-st.divider()
-
-st.subheader(
-    f"Key Insights for {selected_county}"
-)
-
-score_cols = [
-    "transportation_score_display",
-    "digital_score_display",
-    "education_score_display",
-    "language_score_display",
-    "disability_score_display",
-    "household_score_display",
-    "mobility_score_display"
-]
-
-highest_barrier = (
-    county_data[score_cols]
-    .idxmax()
-    .replace(
-        "_score_display",
-        ""
-    )
-    .replace(
-        "_",
-        " "
-    )
-    .title()
-)
-
-c1, c2, c3 = st.columns(3)
-
-with c1:
-    st.info(
-        f"Highest barrier category: {highest_barrier}"
-    )
-
-with c2:
-    st.info(
-        county_data[
-            "transportation_risk_description"
-        ]
-    )
-
-with c3:
-    st.info(
-        f"County ranks #{int(county_data['civil_rank'])} statewide."
-    )
+            st.metric(
+                label,
+                int(
+                    county_data[column]
+                )
+            )
 
 # --------------------------------------------------
 # ABOUT
@@ -296,16 +153,22 @@ with st.expander(
 
         ### Data Sources
 
-        ACS demographic and socioeconomic indicators, RUCA classifications, and civil filing data.
+        ACS demographic and socioeconomic indicators,
+        RUCA classifications, and civil filing data.
 
         ### Methodology
 
-        Barrier scores were developed for transportation, digital access, education, language, disability, household, and mobility factors.
+        Barrier scores were developed for transportation,
+        digital access, education, language, disability,
+        household, and mobility factors.
 
-        Linear regression was used to estimate expected civil filings, while transportation risk categories were created from transportation barrier indicators.
+        Linear regression was used to estimate expected
+        civil filings, while transportation risk categories
+        were created from transportation barrier indicators.
 
         ### Intended Use
 
-        Support access-to-justice planning, policy analysis, and community research.
+        Support access-to-justice planning,
+        policy analysis, and community research.
         """
     )
