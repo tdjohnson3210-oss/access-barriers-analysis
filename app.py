@@ -1,89 +1,10 @@
 import streamlit as st
 import pandas as pd
-import joblib
-import requests
-
-from io import BytesIO
 
 st.set_page_config(
     page_title="Access Barriers Analysis Dashboard",
     layout="wide"
 )
-
-# GitHub URLs ----
-BASE_URL = (
-    "https://raw.githubusercontent.com/"
-    "tdjohnson3210-oss/access-barriers-analysis/main/models"
-)
-
-CIVIL_MODEL_URL = (
-    f"{BASE_URL}/civil_filings_model.pkl"
-)
-
-CIVIL_FEATURES_URL = (
-    f"{BASE_URL}/civil_filings_features.pkl"
-)
-
-TRANSPORT_MODEL_URL = (
-    f"{BASE_URL}/transportation_risk_model.pkl"
-)
-
-TRANSPORT_FEATURES_URL = (
-    f"{BASE_URL}/transportation_risk_features.pkl"
-)
-
-# Load Models ----
-@st.cache_resource
-def load_models():
-
-    # Civil Filings
-    civil_model = joblib.load(
-        BytesIO(
-            requests.get(
-                CIVIL_MODEL_URL
-            ).content
-        )
-    )
-
-    civil_features = joblib.load(
-        BytesIO(
-            requests.get(
-                CIVIL_FEATURES_URL
-            ).content
-        )
-    )
-
-    # Transportation Risk
-    transportation_model = joblib.load(
-        BytesIO(
-            requests.get(
-                TRANSPORT_MODEL_URL
-            ).content
-        )
-    )
-
-    transportation_features = joblib.load(
-        BytesIO(
-            requests.get(
-                TRANSPORT_FEATURES_URL
-            ).content
-        )
-    )
-
-    return (
-        civil_model,
-        civil_features,
-        transportation_model,
-        transportation_features
-    )
-
-# Uncomment when URLs are confirmed working ----
-# (
-#     civil_model,
-#     civil_features,
-#     transportation_model,
-#     transportation_features
-# ) = load_models()
 
 # County Selection ----
 selected_county = st.selectbox(
@@ -98,82 +19,61 @@ selected_county = st.selectbox(
 )
 
 # County Overview ----
-st.markdown("### COUNTY OVERVIEW")
+st.caption("COUNTY OVERVIEW")
 
-st.markdown(
-    f"""
-    ## {selected_county} County Access Snapshot
-    """
+st.subheader(
+    f"{selected_county} County Access Snapshot"
 )
 
 col1, col2, col3, col4 = st.columns(4)
 
 with col1:
-    st.metric(
-        label="County Access Score",
-        value="--"
-    )
+    st.metric("County Access Score", "--")
     st.caption("Higher scores suggest more barriers")
 
 with col2:
-    st.metric(
-        label="Statewide Ranking",
-        value="--"
-    )
+    st.metric("Statewide Ranking", "--")
     st.caption("Ranked from higher to lower barriers")
 
 with col3:
-    st.metric(
-        label="Risk Classification",
-        value="--"
-    )
+    st.metric("Risk Classification", "--")
     st.caption("Based on combined access indicators")
 
 with col4:
-    st.metric(
-        label="Similar Communities",
-        value="--"
-    )
+    st.metric("Similar Communities", "--")
     st.caption("Counties with comparable patterns")
 
 # Map and Profile ----
-map_col, profile_col = st.columns([2, 1])
+st.divider()
+
+map_col, profile_col = st.columns([3, 1])
 
 with map_col:
 
-    st.subheader("Access Barriers Across Washington")
+    st.caption("COUNTY MAP")
+
+    st.subheader(
+        "Access Barriers Across Washington"
+    )
 
     st.caption(
         "County access scores shown from lower to higher potential barriers"
     )
 
-    map_placeholder = pd.DataFrame(
-        {
-            "x": [1, 2, 3, 4, 5],
-            "y": [3, 5, 2, 6, 4]
-        }
+    st.info(
+        "Interactive Washington county map coming soon."
     )
 
-    st.scatter_chart(
-        map_placeholder,
-        x="x",
-        y="y"
-    )
+    st.container(height=250)
 
 with profile_col:
 
     st.subheader("County Profile")
 
-    st.markdown(
-        f"### {selected_county} County"
-    )
-
     st.metric(
-        label="Access Classification",
-        value="--"
+        "Access Classification",
+        "--"
     )
-
-    st.divider()
 
     st.markdown("**Regional Classification**")
     st.write("--")
@@ -184,18 +84,10 @@ with profile_col:
     st.markdown("**Statewide Comparison**")
     st.write("--")
 
-    st.divider()
-
-    st.info(
-        """
-        County-specific characteristics and
-        interpretation will appear here.
-        """
-    )
-
-
 # County Comparison ----
-st.markdown("### COUNTY COMPARISON")
+st.divider()
+
+st.caption("COUNTY COMPARISON")
 
 st.subheader(
     "Compare With Similar Communities"
@@ -214,13 +106,7 @@ comparison_df = pd.DataFrame(
             "Grant",
             "Douglas"
         ],
-        "Score": [
-            79,
-            74,
-            67,
-            65,
-            64
-        ]
+        "Score": [79, 74, 67, 65, 64]
     }
 )
 
@@ -228,73 +114,47 @@ st.bar_chart(
     comparison_df.set_index("County")
 )
 
-
 # Community Context ----
-st.markdown("### COMMUNITY CONTEXT")
+st.divider()
+
+st.caption("COMMUNITY CONTEXT")
 
 st.subheader(
     "Factors Associated With Access Barriers"
 )
 
-st.caption(
-    "Conditions that may shape how easily residents can reach and use court services."
-)
-
 factor1, factor2, factor3, factor4, factor5 = st.columns(5)
 
-with factor1:
-    st.info(
-        """
-        **Transportation Availability**
+factor_titles = [
+    "Transportation Availability",
+    "Geographic Isolation",
+    "Rural Accessibility",
+    "Service Proximity",
+    "Community Characteristics"
+]
 
-        Access to public transit and
-        reliable transportation.
-        """
-    )
+factor_descriptions = [
+    "Access to public transit and reliable transportation.",
+    "Travel distance and natural geographic constraints.",
+    "Ability to reach services from rural communities.",
+    "Distance to courthouses and legal assistance.",
+    "Local conditions that affect service access."
+]
 
-with factor2:
-    st.info(
-        """
-        **Geographic Isolation**
-
-        Travel distance and natural
-        geographic constraints.
-        """
-    )
-
-with factor3:
-    st.info(
-        """
-        **Rural Accessibility**
-
-        Ability to reach services from
-        rural communities.
-        """
-    )
-
-with factor4:
-    st.info(
-        """
-        **Service Proximity**
-
-        Distance to courthouses and
-        legal assistance.
-        """
-    )
-
-with factor5:
-    st.info(
-        """
-        **Community Characteristics**
-
-        Local conditions that affect
-        service access.
-        """
-    )
-
+for col, title, description in zip(
+    [factor1, factor2, factor3, factor4, factor5],
+    factor_titles,
+    factor_descriptions
+):
+    with col:
+        with st.container(border=True):
+            st.markdown(f"**{title}**")
+            st.caption(description)
 
 # Key Insights ----
-st.markdown("### DECISION SUPPORT")
+st.divider()
+
+st.caption("DECISION SUPPORT")
 
 st.subheader(
     f"Key Insights for {selected_county} County"
@@ -302,34 +162,19 @@ st.subheader(
 
 insight_col1, insight_col2, insight_col3 = st.columns(3)
 
-with insight_col1:
-    st.success(
-        """
-        This county exhibits higher
-        access barriers than the
-        statewide average.
-        """
-    )
+insights = [
+    "This county exhibits higher access barriers than the statewide average.",
+    "Transportation and geographic factors appear to contribute to the county profile.",
+    "Comparable counties demonstrate similar accessibility patterns and may provide useful planning comparisons."
+]
 
-with insight_col2:
-    st.success(
-        """
-        Transportation and geographic
-        factors appear to contribute
-        to the county profile.
-        """
-    )
-
-with insight_col3:
-    st.success(
-        """
-        Comparable counties demonstrate
-        similar accessibility patterns
-        and may provide useful
-        planning comparisons.
-        """
-    )
-
+for col, insight in zip(
+    [insight_col1, insight_col2, insight_col3],
+    insights
+):
+    with col:
+        with st.container(border=True):
+            st.write(insight)
 
 # About the Model ----
 with st.expander(
@@ -341,9 +186,7 @@ with st.expander(
         """
         ### Project Purpose
 
-        This dashboard is designed to support
-        exploration of potential access-to-justice
-        barriers across Washington State communities.
+        Placeholder
 
         ### Data Sources
 
@@ -359,9 +202,6 @@ with st.expander(
 
         ### Intended Use
 
-        This tool is intended to support research,
-        planning, and discussion. Results should not
-        be interpreted as definitive measures of
-        individual community needs.
+        Placeholder
         """
     )
