@@ -77,12 +77,13 @@ def load_models():
         transportation_features
     )
 
-(
-    civil_model,
-    civil_features,
-    transportation_model,
-    transportation_features
-) = load_models()
+# Uncomment when URLs are confirmed working ----
+# (
+#     civil_model,
+#     civil_features,
+#     transportation_model,
+#     transportation_features
+# ) = load_models()
 
 # County Selection ----
 selected_county = st.selectbox(
@@ -110,31 +111,33 @@ col1, col2, col3, col4 = st.columns(4)
 with col1:
     st.metric(
         label="County Access Score",
-        value="74 / 100"
+        value="--"
     )
     st.caption("Higher scores suggest more barriers")
 
 with col2:
     st.metric(
         label="Statewide Ranking",
-        value="#8 of 39"
+        value="--"
     )
     st.caption("Ranked from higher to lower barriers")
 
 with col3:
     st.metric(
         label="Risk Classification",
-        value="High"
+        value="--"
     )
     st.caption("Based on combined access indicators")
 
 with col4:
     st.metric(
         label="Similar Communities",
-        value="7"
+        value="--"
     )
     st.caption("Counties with comparable patterns")
 
+# Map and Profile ----
+map_col, profile_col = st.columns([2, 1])
 
 with map_col:
 
@@ -155,4 +158,37 @@ with map_col:
         map_placeholder,
         x="x",
         y="y"
+    )
+
+with profile_col:
+
+    st.subheader("County Profile")
+
+    st.markdown(
+        f"### {selected_county} County"
+    )
+
+    st.metric(
+        label="Access Classification",
+        value="--"
+    )
+
+    st.divider()
+
+    st.markdown("**Regional Classification**")
+    st.write("--")
+
+    st.markdown("**Community Type**")
+    st.write("--")
+
+    st.markdown("**Statewide Comparison**")
+    st.write("--")
+
+    st.divider()
+
+    st.info(
+        """
+        County-specific characteristics and
+        interpretation will appear here.
+        """
     )
