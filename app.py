@@ -134,3 +134,25 @@ with col4:
         value="7"
     )
     st.caption("Counties with comparable patterns")
+
+
+with map_col:
+
+    st.subheader("Access Barriers Across Washington")
+
+    st.caption(
+        "County access scores shown from lower to higher potential barriers"
+    )
+
+    map_placeholder = pd.DataFrame(
+        {
+            "x": [1, 2, 3, 4, 5],
+            "y": [3, 5, 2, 6, 4]
+        }
+    )
+
+    st.scatter_chart(
+        map_placeholder,
+        x="x",
+        y="y"
+    )
