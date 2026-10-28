@@ -11,7 +11,6 @@ st.set_page_config(
 )
 
 # Load Models ----
-
 @st.cache_resource
 def load_models():
 
@@ -63,3 +62,43 @@ def load_models():
     transportation_model,
     transportation_features
 ) = load_models()
+
+
+# County Overview ----
+st.markdown("### COUNTY OVERVIEW")
+
+st.markdown(
+    f"""
+    ## {selected_county} County Access Snapshot
+    """
+)
+
+col1, col2, col3, col4 = st.columns(4)
+
+with col1:
+    st.metric(
+        label="County Access Score",
+        value="74 / 100"
+    )
+    st.caption("Higher scores suggest more barriers")
+
+with col2:
+    st.metric(
+        label="Statewide Ranking",
+        value="#8 of 39"
+    )
+    st.caption("Ranked from higher to lower barriers")
+
+with col3:
+    st.metric(
+        label="Risk Classification",
+        value="High"
+    )
+    st.caption("Based on combined access indicators")
+
+with col4:
+    st.metric(
+        label="Similar Communities",
+        value="7"
+    )
+    st.caption("Counties with comparable patterns")
