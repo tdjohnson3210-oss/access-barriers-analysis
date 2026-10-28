@@ -76,7 +76,10 @@ with col1:
 with col2:
     st.metric(
         "Transportation Risk",
-        county_data["transportation_risk"]
+        county_data.get(
+            "transportation_risk",
+            "N/A"
+        )
     )
 
 with col3:
@@ -122,24 +125,37 @@ with profile_col:
     )
 
     st.write(
-        county_data["community_type"]
+        county_data.get(
+            "community_type",
+            "Unavailable"
+        )
     )
 
     st.write(
         "**Population**"
     )
 
+    population = county_data.get(
+        "population_actual",
+        0
+    )
+
     st.write(
-        f"{int(county_data['population_actual']):,}"
+        f"{int(population):,}"
     )
 
     st.write(
         "**Population Density**"
     )
 
+    density = county_data.get(
+        "popdensity_actual",
+        0
+    )
+
     st.write(
         round(
-            county_data["popdensity_actual"],
+            density,
             2
         )
     )
@@ -149,7 +165,10 @@ with profile_col:
     )
 
     st.write(
-        county_data["transportation_risk"]
+        county_data.get(
+            "transportation_risk",
+            "N/A"
+        )
     )
 
 # --------------------------------------------------
@@ -167,43 +186,106 @@ col1, col2, col3, col4, col5, col6, col7 = st.columns(7)
 with col1:
     st.metric(
         "Transportation",
-        county_data["transportation_score_display"]
+        county_data.get(
+            "transportation_score_display",
+            round(
+                county_data.get(
+                    "transportation_score",
+                    0
+                ),
+                2
+            )
+        )
     )
 
 with col2:
     st.metric(
         "Digital",
-        county_data["digital_score_display"]
+        county_data.get(
+            "digital_score_display",
+            round(
+                county_data.get(
+                    "digital_score",
+                    0
+                ),
+                2
+            )
+        )
     )
 
 with col3:
     st.metric(
         "Education",
-        county_data["education_score_display"]
+        county_data.get(
+            "education_score_display",
+            round(
+                county_data.get(
+                    "education_score",
+                    0
+                ),
+                2
+            )
+        )
     )
 
 with col4:
     st.metric(
         "Language",
-        county_data["language_score_display"]
+        county_data.get(
+            "language_score_display",
+            round(
+                county_data.get(
+                    "language_score",
+                    0
+                ),
+                2
+            )
+        )
     )
 
 with col5:
     st.metric(
         "Disability",
-        county_data["disability_score_display"]
+        county_data.get(
+            "disability_score_display",
+            round(
+                county_data.get(
+                    "disability_score",
+                    0
+                ),
+                2
+            )
+        )
     )
 
 with col6:
     st.metric(
         "Household",
-        county_data["household_score_display"]
+        county_data.get(
+            "household_score_display",
+            round(
+                county_data.get(
+                    "household_score",
+                    0
+                ),
+                2
+            )
+        )
     )
 
 with col7:
     st.metric(
         "Mobility",
-        county_data["mobility_score_display"]
+        county_data.get(
+            "mobility_score_display",
+            round(
+                county_data.get(
+                    "mobility_score",
+                    0
+                ),
+                2
+            )
+        )
     )
 
 # --------------------------------------------------
@@ -250,43 +332,21 @@ st.subheader(
     f"Key Insights for {selected_county}"
 )
 
-score_cols = [
-    "transportation_score_display",
-    "digital_score_display",
-    "education_score_display",
-    "language_score_display",
-    "disability_score_display",
-    "household_score_display",
-    "mobility_score_display"
-]
-
-highest_barrier = (
-    county_data[score_cols]
-    .idxmax()
-    .replace(
-        "_score_display",
-        ""
-    )
-    .replace(
-        "_",
-        " "
-    )
-    .title()
-)
-
 c1, c2, c3 = st.columns(3)
 
 with c1:
     st.info(
-        f"Highest barrier category: {highest_barrier}"
+        f"Transportation risk is classified as {county_data.get('transportation_risk','N/A')}."
     )
 
 with c2:
-    st.info(
-        county_data[
-            "transportation_risk_description"
-        ]
+
+    risk_desc = county_data.get(
+        "transportation_risk_description",
+        "Transportation risk description unavailable."
     )
+
+    st.info(risk_desc)
 
 with c3:
     st.info(
@@ -313,7 +373,9 @@ with st.expander(
 
         ### Methodology
 
-        Barrier scores were developed for transportation, digital access, education, language, disability, household, and mobility factors. A linear regression model was used to estimate expected civil filing activity, while a transportation risk model classified county-year observations into transportation risk groups.
+        Barrier scores were developed for transportation, digital access, education, language, disability, household, and mobility factors.
+
+        A linear regression model was used to estimate expected civil filing activity, while a transportation risk model classified county-year observations into transportation risk groups.
 
         ### Intended Use
 
