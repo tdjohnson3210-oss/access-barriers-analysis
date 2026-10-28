@@ -67,7 +67,7 @@ col1, col2, col3, col4 = st.columns(4)
 
 with col1:
     st.metric(
-        "Actual Civil Filings",
+        "Civil Filings",
         int(
             county_data["actual_civil_filings"]
         )
@@ -76,15 +76,12 @@ with col1:
 with col2:
     st.metric(
         "Transportation Risk",
-        county_data.get(
-            "transportation_risk",
-            "N/A"
-        )
+        county_data["transportation_risk"]
     )
 
 with col3:
     st.metric(
-        "Expected Civil Filings",
+        "Expected Filings",
         round(
             county_data["predicted_civil_filings"]
         )
@@ -97,88 +94,79 @@ with col4:
     )
 
 # --------------------------------------------------
-# MAP + PROFILE
+# COUNTY PROFILE
 # --------------------------------------------------
 
 st.divider()
 
-map_col, profile_col = st.columns([3, 1])
+left_col, right_col = st.columns([3, 1])
 
-with map_col:
+with left_col:
 
     st.subheader(
-        "Access Barriers Across Washington"
+        "County Comparison"
     )
 
-    st.info(
-        "Interactive county map coming soon."
+    comparison_df = (
+        dashboard_df[
+            dashboard_df["year"] == selected_year
+        ]
+        .sort_values(
+            "actual_civil_filings",
+            ascending=True
+        )
     )
 
-with profile_col:
+    fig = px.bar(
+        comparison_df,
+        x="actual_civil_filings",
+        y="county",
+        orientation="h",
+        height=1000
+    )
+
+    st.plotly_chart(
+        fig,
+        use_container_width=True
+    )
+
+with right_col:
 
     st.subheader(
         "County Profile"
     )
 
+    st.write("**Community Type**")
     st.write(
-        "**Community Type**"
+        county_data["community_type"]
     )
 
+    st.write("**Population**")
     st.write(
-        county_data.get(
-            "community_type",
-            "Unavailable"
-        )
+        f"{county_data['population_actual']:,.0f}"
     )
 
+    st.write("**Population Density**")
     st.write(
-        "**Population**"
+        f"{county_data['popdensity_actual']:,.1f}"
     )
 
-    population = county_data.get(
-        "population_actual",
-        0
-    )
-
-    st.write(
-        f"{int(population):,}"
-    )
-
-    st.write(
-        "**Population Density**"
-    )
-
-    density = county_data.get(
-        "popdensity_actual",
-        0
-    )
-
+    st.write("**RUCA Score**")
     st.write(
         round(
-            density,
-            2
-        )
-    )
-
-    st.write(
-        "**Transportation Risk**"
-    )
-
-    st.write(
-        county_data.get(
-            "transportation_risk",
-            "N/A"
+            county_data["primaryruca_actual"],
+            1
         )
     )
 
 # --------------------------------------------------
-# BARRIER PROFILE
+# BARRIER SCORES
 # --------------------------------------------------
 
 st.divider()
 
 st.subheader(
-    "Barrier Category Scores"
+    "Barrier Scores (0-100)"
 )
 
 col1, col2, col3, col4, col5, col6, col7 = st.columns(7)
@@ -186,141 +174,58 @@ col1, col2, col3, col4, col5, col6, col7 = st.columns(7)
 with col1:
     st.metric(
         "Transportation",
-        county_data.get(
-            "transportation_score_display",
-            round(
-                county_data.get(
-                    "transportation_score",
-                    0
-                ),
-                2
-            )
-        )
+        county_data[
+            "transportation_score_display"
+        ]
     )
 
 with col2:
     st.metric(
         "Digital",
-        county_data.get(
-            "digital_score_display",
-            round(
-                county_data.get(
-                    "digital_score",
-                    0
-                ),
-                2
-            )
-        )
+        county_data[
+            "digital_score_display"
+        ]
     )
 
 with col3:
     st.metric(
         "Education",
-        county_data.get(
-            "education_score_display",
-            round(
-                county_data.get(
-                    "education_score",
-                    0
-                ),
-                2
-            )
-        )
+        county_data[
+            "education_score_display"
+        ]
     )
 
 with col4:
     st.metric(
         "Language",
-        county_data.get(
-            "language_score_display",
-            round(
-                county_data.get(
-                    "language_score",
-                    0
-                ),
-                2
-            )
-        )
+        county_data[
+            "language_score_display"
+        ]
     )
 
 with col5:
     st.metric(
         "Disability",
-        county_data.get(
-            "disability_score_display",
-            round(
-                county_data.get(
-                    "disability_score",
-                    0
-                ),
-                2
-            )
-        )
+        county_data[
+            "disability_score_display"
+        ]
     )
 
 with col6:
     st.metric(
         "Household",
-        county_data.get(
-            "household_score_display",
-            round(
-                county_data.get(
-                    "household_score",
-                    0
-                ),
-                2
-            )
-        )
+        county_data[
+            "household_score_display"
+        ]
     )
 
 with col7:
     st.metric(
         "Mobility",
-        county_data.get(
-            "mobility_score_display",
-            round(
-                county_data.get(
-                    "mobility_score",
-                    0
-                ),
-                2
-            )
-        )
+        county_data[
+            "mobility_score_display"
+        ]
     )
-
-# --------------------------------------------------
-# COUNTY COMPARISON
-# --------------------------------------------------
-
-st.divider()
-
-st.subheader(
-    "Civil Filings Comparison"
-)
-
-comparison_df = (
-    dashboard_df[
-        dashboard_df["year"] == selected_year
-    ]
-    .sort_values(
-        "actual_civil_filings",
-        ascending=True
-    )
-)
-
-fig = px.bar(
-    comparison_df,
-    x="actual_civil_filings",
-    y="county",
-    orientation="h",
-    height=1200,
-    title=f"Civil Filings by County ({selected_year})"
-)
-
-st.plotly_chart(
-    fig,
-    use_container_width=True
-)
 
 # --------------------------------------------------
 # INSIGHTS
@@ -332,25 +237,47 @@ st.subheader(
     f"Key Insights for {selected_county}"
 )
 
+score_cols = [
+    "transportation_score_display",
+    "digital_score_display",
+    "education_score_display",
+    "language_score_display",
+    "disability_score_display",
+    "household_score_display",
+    "mobility_score_display"
+]
+
+highest_barrier = (
+    county_data[score_cols]
+    .idxmax()
+    .replace(
+        "_score_display",
+        ""
+    )
+    .replace(
+        "_",
+        " "
+    )
+    .title()
+)
+
 c1, c2, c3 = st.columns(3)
 
 with c1:
     st.info(
-        f"Transportation risk is classified as {county_data.get('transportation_risk','N/A')}."
+        f"Highest barrier category: {highest_barrier}"
     )
 
 with c2:
-
-    risk_desc = county_data.get(
-        "transportation_risk_description",
-        "Transportation risk description unavailable."
+    st.info(
+        county_data[
+            "transportation_risk_description"
+        ]
     )
-
-    st.info(risk_desc)
 
 with c3:
     st.info(
-        f"County ranks #{int(county_data['civil_rank'])} statewide for civil filings in {selected_year}."
+        f"County ranks #{int(county_data['civil_rank'])} statewide."
     )
 
 # --------------------------------------------------
@@ -375,10 +302,10 @@ with st.expander(
 
         Barrier scores were developed for transportation, digital access, education, language, disability, household, and mobility factors.
 
-        A linear regression model was used to estimate expected civil filing activity, while a transportation risk model classified county-year observations into transportation risk groups.
+        Linear regression was used to estimate expected civil filings, while transportation risk categories were created from transportation barrier indicators.
 
         ### Intended Use
 
-        Support access-to-justice planning, research, and policy analysis.
+        Support access-to-justice planning, policy analysis, and community research.
         """
     )
