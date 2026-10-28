@@ -28,20 +28,20 @@ st.subheader(
 col1, col2, col3, col4 = st.columns(4)
 
 with col1:
-    st.metric("County Access Score", "--")
-    st.caption("Higher scores suggest more barriers")
+    st.metric("Access Score", "--")
+    st.caption("Composite score across barrier categories")
 
 with col2:
-    st.metric("Statewide Ranking", "--")
-    st.caption("Ranked from higher to lower barriers")
+    st.metric("Transportation Risk", "--")
+    st.caption("Predicted transportation risk level")
 
 with col3:
-    st.metric("Risk Classification", "--")
-    st.caption("Based on combined access indicators")
+    st.metric("Predicted Civil Filings", "--")
+    st.caption("Model-estimated civil filing activity")
 
 with col4:
-    st.metric("Similar Communities", "--")
-    st.caption("Counties with comparable patterns")
+    st.metric("Statewide Rank", "--")
+    st.caption("Relative access barrier ranking")
 
 # Map and Profile ----
 st.divider()
@@ -50,39 +50,67 @@ map_col, profile_col = st.columns([3, 1])
 
 with map_col:
 
-    st.caption("COUNTY MAP")
+    st.caption("STATEWIDE MAP")
 
     st.subheader(
         "Access Barriers Across Washington"
     )
 
     st.caption(
-        "County access scores shown from lower to higher potential barriers"
+        "Counties shaded by overall access score."
     )
 
     st.info(
         "Interactive Washington county map coming soon."
     )
 
-    st.container(height=250)
+    st.container(height=300)
 
 with profile_col:
 
     st.subheader("County Profile")
 
-    st.metric(
-        "Access Classification",
-        "--"
-    )
-
-    st.markdown("**Regional Classification**")
-    st.write("--")
-
     st.markdown("**Community Type**")
     st.write("--")
 
-    st.markdown("**Statewide Comparison**")
+    st.markdown("**Urban-Rural Classification**")
     st.write("--")
+
+    st.markdown("**Population**")
+    st.write("--")
+
+    st.markdown("**Similar Counties**")
+    st.write("--")
+
+# Barrier Profile ----
+st.divider()
+
+st.caption("BARRIER PROFILE")
+
+st.subheader(
+    "Barrier Category Breakdown"
+)
+
+barrier_cols = st.columns(7)
+
+barriers = [
+    "Transportation",
+    "Digital",
+    "Education",
+    "Language",
+    "Disability",
+    "Household",
+    "Mobility"
+]
+
+for col, barrier in zip(barrier_cols, barriers):
+
+    with col:
+
+        st.metric(
+            barrier,
+            "--"
+        )
 
 # County Comparison ----
 st.divider()
@@ -94,7 +122,7 @@ st.subheader(
 )
 
 st.caption(
-    "Access scores for counties with similar geographic and community characteristics"
+    "Comparison of access scores among counties within the same cluster group."
 )
 
 comparison_df = pd.DataFrame(
@@ -106,7 +134,7 @@ comparison_df = pd.DataFrame(
             "Grant",
             "Douglas"
         ],
-        "Score": [79, 74, 67, 65, 64]
+        "Access Score": [79, 74, 67, 65, 64]
     }
 )
 
@@ -114,44 +142,7 @@ st.bar_chart(
     comparison_df.set_index("County")
 )
 
-# Community Context ----
-st.divider()
-
-st.caption("COMMUNITY CONTEXT")
-
-st.subheader(
-    "Factors Associated With Access Barriers"
-)
-
-factor1, factor2, factor3, factor4, factor5 = st.columns(5)
-
-factor_titles = [
-    "Transportation Availability",
-    "Geographic Isolation",
-    "Rural Accessibility",
-    "Service Proximity",
-    "Community Characteristics"
-]
-
-factor_descriptions = [
-    "Access to public transit and reliable transportation.",
-    "Travel distance and natural geographic constraints.",
-    "Ability to reach services from rural communities.",
-    "Distance to courthouses and legal assistance.",
-    "Local conditions that affect service access."
-]
-
-for col, title, description in zip(
-    [factor1, factor2, factor3, factor4, factor5],
-    factor_titles,
-    factor_descriptions
-):
-    with col:
-        with st.container(border=True):
-            st.markdown(f"**{title}**")
-            st.caption(description)
-
-# Key Insights ----
+# Decision Support ----
 st.divider()
 
 st.caption("DECISION SUPPORT")
@@ -162,19 +153,29 @@ st.subheader(
 
 insight_col1, insight_col2, insight_col3 = st.columns(3)
 
-insights = [
-    "This county exhibits higher access barriers than the statewide average.",
-    "Transportation and geographic factors appear to contribute to the county profile.",
-    "Comparable counties demonstrate similar accessibility patterns and may provide useful planning comparisons."
-]
+with insight_col1:
 
-for col, insight in zip(
-    [insight_col1, insight_col2, insight_col3],
-    insights
-):
-    with col:
-        with st.container(border=True):
-            st.write(insight)
+    with st.container(border=True):
+
+        st.write(
+            "Highest barrier category will be identified automatically."
+        )
+
+with insight_col2:
+
+    with st.container(border=True):
+
+        st.write(
+            "Statewide ranking and transportation risk insights will appear here."
+        )
+
+with insight_col3:
+
+    with st.container(border=True):
+
+        st.write(
+            "Cluster-based comparison counties and planning considerations will appear here."
+        )
 
 # About the Model ----
 with st.expander(
@@ -186,22 +187,22 @@ with st.expander(
         """
         ### Project Purpose
 
-        Placeholder
+        Identify and visualize access barriers across Washington communities.
 
         ### Data Sources
 
-        Placeholder
+        American Community Survey (ACS), RUCA classifications, and Washington civil filing data.
 
         ### Methodology
 
-        Placeholder
+        Barrier scores were developed for transportation, digital access, education, language, disability, household, and mobility factors. Predictive models were then used to estimate civil filing activity and transportation risk.
 
         ### Model Limitations
 
-        Placeholder
+        Results identify patterns and associations and should not be interpreted as causal findings.
 
         ### Intended Use
 
-        Placeholder
+        Support planning, research, and access-to-justice initiatives.
         """
     )
