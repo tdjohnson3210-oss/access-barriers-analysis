@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import plotly.express as px
 
 st.set_page_config(
     page_title="Access Barriers Analysis Dashboard",
@@ -117,11 +118,11 @@ with profile_col:
     )
 
     st.write(
-        "**Transportation Risk**"
+        "**Community Type**"
     )
 
     st.write(
-        county_data["transportation_risk"]
+        county_data["community_type"]
     )
 
     st.write(
@@ -129,7 +130,7 @@ with profile_col:
     )
 
     st.write(
-        f"{int(county_data['population']):,}"
+        f"{int(county_data['population_actual']):,}"
     )
 
     st.write(
@@ -138,17 +139,17 @@ with profile_col:
 
     st.write(
         round(
-            county_data["popdensity"],
+            county_data["popdensity_actual"],
             2
         )
     )
 
     st.write(
-        "**Primary RUCA**"
+        "**Transportation Risk**"
     )
 
     st.write(
-        county_data["primaryruca"]
+        county_data["transportation_risk"]
     )
 
 # --------------------------------------------------
@@ -166,64 +167,43 @@ col1, col2, col3, col4, col5, col6, col7 = st.columns(7)
 with col1:
     st.metric(
         "Transportation",
-        round(
-            county_data["transportation_score"],
-            2
-        )
+        county_data["transportation_score_display"]
     )
 
 with col2:
     st.metric(
         "Digital",
-        round(
-            county_data["digital_score"],
-            2
-        )
+        county_data["digital_score_display"]
     )
 
 with col3:
     st.metric(
         "Education",
-        round(
-            county_data["education_score"],
-            2
-        )
+        county_data["education_score_display"]
     )
 
 with col4:
     st.metric(
         "Language",
-        round(
-            county_data["language_score"],
-            2
-        )
+        county_data["language_score_display"]
     )
 
 with col5:
     st.metric(
         "Disability",
-        round(
-            county_data["disability_score"],
-            2
-        )
+        county_data["disability_score_display"]
     )
 
 with col6:
     st.metric(
         "Household",
-        round(
-            county_data["household_score"],
-            2
-        )
+        county_data["household_score_display"]
     )
 
 with col7:
     st.metric(
         "Mobility",
-        round(
-            county_data["mobility_score"],
-            2
-        )
+        county_data["mobility_score_display"]
     )
 
 # --------------------------------------------------
@@ -242,15 +222,22 @@ comparison_df = (
     ]
     .sort_values(
         "actual_civil_filings",
-        ascending=False
+        ascending=True
     )
-    .head(10)
 )
 
-st.bar_chart(
-    comparison_df.set_index(
-        "county"
-    )["actual_civil_filings"]
+fig = px.bar(
+    comparison_df,
+    x="actual_civil_filings",
+    y="county",
+    orientation="h",
+    height=1200,
+    title=f"Civil Filings by County ({selected_year})"
+)
+
+st.plotly_chart(
+    fig,
+    use_container_width=True
 )
 
 # --------------------------------------------------
@@ -264,20 +251,26 @@ st.subheader(
 )
 
 score_cols = [
-    "transportation_score",
-    "digital_score",
-    "education_score",
-    "language_score",
-    "disability_score",
-    "household_score",
-    "mobility_score"
+    "transportation_score_display",
+    "digital_score_display",
+    "education_score_display",
+    "language_score_display",
+    "disability_score_display",
+    "household_score_display",
+    "mobility_score_display"
 ]
 
 highest_barrier = (
     county_data[score_cols]
     .idxmax()
-    .replace("_score", "")
-    .replace("_", " ")
+    .replace(
+        "_score_display",
+        ""
+    )
+    .replace(
+        "_",
+        " "
+    )
     .title()
 )
 
@@ -290,7 +283,9 @@ with c1:
 
 with c2:
     st.info(
-        f"Transportation risk is classified as {county_data['transportation_risk']}."
+        county_data[
+            "transportation_risk_description"
+        ]
     )
 
 with c3:
