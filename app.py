@@ -10,6 +10,28 @@ st.set_page_config(
     layout="wide"
 )
 
+# GitHub URLs ----
+BASE_URL = (
+    "https://raw.githubusercontent.com/"
+    "tdjohnson3210-oss/access-barriers-analysis/main/models"
+)
+
+CIVIL_MODEL_URL = (
+    f"{BASE_URL}/civil_filings_model.pkl"
+)
+
+CIVIL_FEATURES_URL = (
+    f"{BASE_URL}/civil_filings_features.pkl"
+)
+
+TRANSPORT_MODEL_URL = (
+    f"{BASE_URL}/transportation_risk_model.pkl"
+)
+
+TRANSPORT_FEATURES_URL = (
+    f"{BASE_URL}/transportation_risk_features.pkl"
+)
+
 # Load Models ----
 @st.cache_resource
 def load_models():
@@ -55,7 +77,6 @@ def load_models():
         transportation_features
     )
 
-
 (
     civil_model,
     civil_features,
@@ -63,6 +84,17 @@ def load_models():
     transportation_features
 ) = load_models()
 
+# County Selection ----
+selected_county = st.selectbox(
+    "County",
+    [
+        "Yakima",
+        "Adams",
+        "Benton",
+        "Chelan",
+        "Clark"
+    ]
+)
 
 # County Overview ----
 st.markdown("### COUNTY OVERVIEW")
