@@ -33,8 +33,7 @@ selected_year = st.selectbox(
         dashboard_df["year"].unique()
     ),
     index=len(
-        dashboard_df["year"].unique()
-    ) - 1
+        dashboard_df["year"].unique()) - 1
 )
 
 selected_county = st.selectbox(
@@ -116,26 +115,61 @@ with barrier_col:
         "Barrier Profile"
     )
 
-    score_fields = [
-        ("Transportation", "transportation_score_display"),
-        ("Digital", "digital_score_display"),
-        ("Education", "education_score_display"),
-        ("Language", "language_score_display"),
-        ("Disability", "disability_score_display"),
-        ("Household", "household_score_display"),
-        ("Mobility", "mobility_score_display")
-    ]
+    st.metric(
+        "Transportation",
+        round(
+            county_data["transportation_score"],
+            2
+        )
+    )
 
-    for label, column in score_fields:
+    st.metric(
+        "Digital",
+        round(
+            county_data["digital_score"],
+            2
+        )
+    )
 
-        if column in county_data.index:
+    st.metric(
+        "Education",
+        round(
+            county_data["education_score"],
+            2
+        )
+    )
 
-            st.metric(
-                label,
-                int(
-                    county_data[column]
-                )
-            )
+    st.metric(
+        "Language",
+        round(
+            county_data["language_score"],
+            2
+        )
+    )
+
+    st.metric(
+        "Disability",
+        round(
+            county_data["disability_score"],
+            2
+        )
+    )
+
+    st.metric(
+        "Household",
+        round(
+            county_data["household_score"],
+            2
+        )
+    )
+
+    st.metric(
+        "Mobility",
+        round(
+            county_data["mobility_score"],
+            2
+        )
+    )
 
 # --------------------------------------------------
 # ABOUT
