@@ -122,7 +122,7 @@ m1, m2, m3, m4 = st.columns(4)
 with m1:
 
     st.metric(
-        "Civil Filings",
+        "Actual Civil Filings",
         f"{int(county_data['actual_civil_filings']):,}"
     )
 
@@ -136,7 +136,7 @@ with m2:
 with m3:
 
     st.metric(
-        "Expected Filings",
+        "Projetced Civil Filings (Expected considering barrier scores)",
         f"{round(county_data['predicted_civil_filings']):,}"
     )
 
@@ -327,7 +327,7 @@ with st.expander(
         """
         ### Project Purpose
 
-        Identify and visualize access barriers across Washington communities.
+        Identify access barriers across Washington county communities.
 
         ### Data Sources
 
