@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import geopandas as gpd
 import plotly.express as px
 
 st.set_page_config(
@@ -26,19 +25,12 @@ def load_data():
 dashboard_df = load_data()
 
 # --------------------------------------------------
-# LOAD MAP
-# --------------------------------------------------
-
-@st.cache_data
-def load_map():
-
-    return gpd.read_file(
-        "data_processed/washington_counties.geojson"
-    )
-
-# --------------------------------------------------
 # FILTERS
 # --------------------------------------------------
+
+st.title(
+    "Washington Access Barriers Dashboard"
+)
 
 selected_year = st.selectbox(
     "Year",
@@ -65,21 +57,25 @@ county_data = dashboard_df[
     (dashboard_df["year"] == selected_year)
 ].iloc[0]
 
+year_df = dashboard_df[
+    dashboard_df["year"] == selected_year
+]
+
 # --------------------------------------------------
-# COUNTY OVERVIEW
+# SNAPSHOT
 # --------------------------------------------------
 
 st.caption(
-    "COUNTY OVERVIEW"
+    "COUNTY SNAPSHOT"
 )
 
 st.subheader(
-    f"{selected_county} Access Snapshot"
+    f"{selected_county}"
 )
 
-col1, col2, col3, col4 = st.columns(4)
+c1, c2, c3, c4 = st.columns(4)
 
-with col1:
+with c1:
 
     st.metric(
         "Civil Filings",
@@ -88,14 +84,14 @@ with col1:
         )
     )
 
-with col2:
+with c2:
 
     st.metric(
         "Transportation Risk",
         county_data["transportation_risk"]
     )
 
-with col3:
+with c3:
 
     st.metric(
         "Expected Filings",
@@ -104,7 +100,7 @@ with col3:
         )
     )
 
-with col4:
+with c4:
 
     st.metric(
         "Statewide Rank",
@@ -112,144 +108,136 @@ with col4:
     )
 
 # --------------------------------------------------
-# MAP + BARRIER PROFILE
+# STATEWIDE COMPARISON
 # --------------------------------------------------
 
 st.divider()
 
-map_col, barrier_col = st.columns([4, 1])
+st.subheader(
+    "Transportation Risk Across Washington"
+)
 
-with map_col:
-
-    st.subheader(
-        "Access Barriers Across Washington"
+comparison_df = (
+    year_df
+    .sort_values(
+        "transportation_score",
+        ascending=False
     )
+)
 
-    try:
+fig = px.bar(
+    comparison_df,
+    x="transportation_score",
+    y="county",
+    orientation="h",
+    color="transportation_risk",
+    color_discrete_map={
+        "Very Low": "#2ca02c",
+        "Low": "#98df8a",
+        "Moderate": "#ffbb78",
+        "High": "#ff7f0e",
+        "Very High": "#d62728"
+    },
+    hover_data=[
+        "actual_civil_filings",
+        "civil_rank"
+    ],
+    height=900
+)
 
-        counties = load_map()
+fig.update_layout(
+    yaxis_title="",
+    xaxis_title="Transportation Barrier Score",
+    legend_title="Risk Category"
+)
 
-        counties["county"] = (
-            counties["NAMELSAD"]
-        )
+st.plotly_chart(
+    fig,
+    use_container_width=True
+)
 
-        map_df = (
-            dashboard_df[
-                dashboard_df["year"] == selected_year
-            ]
-            .copy()
-        )
+# --------------------------------------------------
+# COUNTY BARRIER PROFILE
+# --------------------------------------------------
 
-        counties = counties.merge(
-            map_df,
-            on="county",
-            how="left"
-        )
+st.divider()
 
-        counties = counties.reset_index()
+st.subheader(
+    f"{selected_county} Barrier Profile"
+)
 
-        fig = px.choropleth_mapbox(
-            counties,
-            geojson=counties.__geo_interface__,
-            locations="index",
-            color="transportation_score",
-            hover_name="county",
-            hover_data={
-                "transportation_risk": True,
-                "actual_civil_filings": True,
-                "civil_rank": True
-            },
-            center={
-                "lat": 47.4,
-                "lon": -120.7
-            },
-            zoom=5,
-            mapbox_style="carto-positron",
-            opacity=0.7,
-            color_continuous_scale="RdYlGn_r"
-        )
-
-        fig.update_layout(
-            margin=dict(
-                l=0,
-                r=0,
-                t=0,
-                b=0
-            )
-        )
-
-        st.plotly_chart(
-            fig,
-            use_container_width=True
-        )
-
-    except Exception as e:
-
-        st.error(
-            f"Map Error: {str(e)}"
-        )
-
-with barrier_col:
-
-    st.subheader(
-        "Barrier Profile"
-    )
-
-    st.metric(
+barrier_df = pd.DataFrame({
+    "Barrier": [
         "Transportation",
-        round(
-            county_data["transportation_score"],
-            2
-        )
-    )
-
-    st.metric(
         "Digital",
-        round(
-            county_data["digital_score"],
-            2
-        )
-    )
-
-    st.metric(
         "Education",
-        round(
-            county_data["education_score"],
-            2
-        )
-    )
-
-    st.metric(
         "Language",
-        round(
-            county_data["language_score"],
-            2
-        )
-    )
-
-    st.metric(
         "Disability",
-        round(
-            county_data["disability_score"],
-            2
-        )
-    )
-
-    st.metric(
         "Household",
-        round(
-            county_data["household_score"],
-            2
-        )
-    )
+        "Mobility"
+    ],
+    "Score": [
+        county_data["transportation_score"],
+        county_data["digital_score"],
+        county_data["education_score"],
+        county_data["language_score"],
+        county_data["disability_score"],
+        county_data["household_score"],
+        county_data["mobility_score"]
+    ]
+})
 
-    st.metric(
-        "Mobility",
-        round(
-            county_data["mobility_score"],
-            2
-        )
+profile_fig = px.bar(
+    barrier_df,
+    x="Score",
+    y="Barrier",
+    orientation="h",
+    color="Score",
+    color_continuous_scale="RdYlGn_r",
+    text_auto=".2f"
+)
+
+profile_fig.update_layout(
+    height=500,
+    yaxis_title="",
+    xaxis_title="Barrier Score",
+    coloraxis_showscale=False
+)
+
+st.plotly_chart(
+    profile_fig,
+    use_container_width=True
+)
+
+# --------------------------------------------------
+# COUNTY COMPARISON TABLE
+# --------------------------------------------------
+
+st.divider()
+
+st.subheader(
+    "County Rankings"
+)
+
+ranking_df = (
+    year_df[
+        [
+            "county",
+            "transportation_risk",
+            "actual_civil_filings",
+            "civil_rank"
+        ]
+    ]
+    .sort_values(
+        "civil_rank"
     )
+)
+
+st.dataframe(
+    ranking_df,
+    use_container_width=True,
+    hide_index=True
+)
 
 # --------------------------------------------------
 # ABOUT
@@ -267,22 +255,16 @@ with st.expander(
 
         ### Data Sources
 
-        ACS demographic and socioeconomic indicators,
-        RUCA classifications, and civil filing data.
+        ACS demographic and socioeconomic indicators, RUCA classifications, and civil filing data.
 
         ### Methodology
 
-        Barrier scores were developed for transportation,
-        digital access, education, language, disability,
-        household, and mobility factors.
+        Barrier scores were developed for transportation, digital access, education, language, disability, household, and mobility factors.
 
-        Linear regression was used to estimate expected
-        civil filings, while transportation risk categories
-        were created from transportation barrier indicators.
+        Linear regression was used to estimate expected civil filing activity. Transportation risk classifications were generated from transportation barrier indicators.
 
         ### Intended Use
 
-        Support access-to-justice planning,
-        policy analysis, and community research.
+        Support access-to-justice planning, research, and policy analysis across Washington State.
         """
     )
