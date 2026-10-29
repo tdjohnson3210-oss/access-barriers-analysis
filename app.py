@@ -1,5 +1,7 @@
 import streamlit as st
 import pandas as pd
+import geopandas as gpd
+import plotly.express as px
 
 st.set_page_config(
     page_title="Access Barriers Analysis Dashboard",
@@ -24,6 +26,17 @@ def load_data():
 dashboard_df = load_data()
 
 # --------------------------------------------------
+# LOAD MAP
+# --------------------------------------------------
+
+@st.cache_data
+def load_map():
+
+    return gpd.read_file(
+        "data_processed/washington_counties.geojson"
+    )
+
+# --------------------------------------------------
 # FILTERS
 # --------------------------------------------------
 
@@ -33,7 +46,8 @@ selected_year = st.selectbox(
         dashboard_df["year"].unique()
     ),
     index=len(
-        dashboard_df["year"].unique()) - 1
+        dashboard_df["year"].unique()
+    ) - 1
 )
 
 selected_county = st.selectbox(
@@ -105,9 +119,50 @@ with map_col:
         "Access Barriers Across Washington"
     )
 
-    st.info(
-        "Washington county choropleth map coming soon."
-    )
+    try:
+
+        counties = load_map()
+
+        # CHANGE THIS IF COUNTY NAMES DON'T MATCH
+        counties["county"] = counties["NAME"]
+
+        map_df = dashboard_df[
+            dashboard_df["year"] == selected_year
+        ].copy()
+
+        counties = counties.merge(
+            map_df,
+            on="county",
+            how="left"
+        )
+
+        fig = px.choropleth(
+            counties,
+            geojson=counties.geometry,
+            locations=counties.index,
+            color="transportation_score",
+            hover_name="county",
+            hover_data={
+                "transportation_risk": True,
+                "actual_civil_filings": True,
+                "civil_rank": True
+            },
+            color_continuous_scale="RdYlGn_r"
+        )
+
+        fig.update_geos(
+            fitbounds="locations",
+            visible=False
+        )
+
+        st.plotly_chart(
+            fig,
+            use_container_width=True
+        )
+
+    except Exception as e:
+
+        st.error(str(e))
 
 with barrier_col:
 
