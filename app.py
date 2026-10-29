@@ -301,4 +301,69 @@ with left_col:
                     "community_type",
                     "Unavailable"
                 ),
-                county_data["transportation_risk"
+                county_data["transportation_risk"],
+                f"#{int(county_data['civil_rank'])}"
+            ]
+        }
+    )
+
+    st.dataframe(
+        context_df,
+        hide_index=True,
+        use_container_width=True
+    )
+
+with right_col:
+
+    st.subheader(
+        "Access Barrier Profile"
+    )
+
+    profile_df = pd.DataFrame(
+        {
+            "Barrier": list(
+                barrier_profile.keys()
+            ),
+            "Assessment": list(
+                barrier_profile.values()
+            )
+        }
+    )
+
+    st.dataframe(
+        profile_df,
+        hide_index=True,
+        use_container_width=True
+    )
+
+# --------------------------------------------------
+# ABOUT
+# --------------------------------------------------
+
+with st.expander(
+    "About the Model"
+):
+
+    st.markdown(
+        """
+        ### Project Purpose
+
+        Identify and visualize access barriers across Washington communities.
+
+        ### Data Sources
+
+        ACS demographic and socioeconomic indicators, RUCA classifications, and civil filing data.
+
+        ### Methodology
+
+        Access barrier measures were developed across transportation, digital access, education, language, disability, household, and mobility domains using county-level demographic and socioeconomic indicators.
+
+        For dashboard reporting, barrier measures are translated into relative assessment categories ranging from Very Low to Very High. These categories provide an interpretable representation of how each county compares with other Washington counties across barrier dimensions.
+
+        Linear regression was used to estimate expected civil filing activity. Transportation risk classifications were generated from transportation-related indicators and are presented as relative risk categories to support interpretation and comparison.
+
+        ### Intended Use
+
+        Support access-to-justice planning, research, and policy analysis across Washington State.
+        """
+    )
