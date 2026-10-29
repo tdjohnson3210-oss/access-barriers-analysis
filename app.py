@@ -123,12 +123,15 @@ with map_col:
 
         counties = load_map()
 
-        # CHANGE THIS IF COUNTY NAMES DON'T MATCH
-        counties["county"] = counties["NAME"]
+        # Most Census-derived GeoJSON files use NAME
+        counties["county"] = counties["NAME"] + " County"
 
-        map_df = dashboard_df[
-            dashboard_df["year"] == selected_year
-        ].copy()
+        map_df = (
+            dashboard_df[
+                dashboard_df["year"] == selected_year
+            ]
+            .copy()
+        )
 
         counties = counties.merge(
             map_df,
@@ -136,10 +139,12 @@ with map_col:
             how="left"
         )
 
-        fig = px.choropleth(
+        counties = counties.reset_index()
+
+        fig = px.choropleth_mapbox(
             counties,
-            geojson=counties.geometry,
-            locations=counties.index,
+            geojson=counties.__geo_interface__,
+            locations="index",
             color="transportation_score",
             hover_name="county",
             hover_data={
@@ -147,12 +152,23 @@ with map_col:
                 "actual_civil_filings": True,
                 "civil_rank": True
             },
+            mapbox_style="carto-positron",
+            center={
+                "lat": 47.4,
+                "lon": -120.7
+            },
+            zoom=5,
+            opacity=0.7,
             color_continuous_scale="RdYlGn_r"
         )
 
-        fig.update_geos(
-            fitbounds="locations",
-            visible=False
+        fig.update_layout(
+            margin=dict(
+                l=0,
+                r=0,
+                t=0,
+                b=0
+            )
         )
 
         st.plotly_chart(
@@ -162,7 +178,9 @@ with map_col:
 
     except Exception as e:
 
-        st.error(str(e))
+        st.error(
+            f"Map Error: {e}"
+        )
 
 with barrier_col:
 
@@ -187,44 +205,6 @@ with barrier_col:
     )
 
     st.metric(
-        "Education",
-        round(
-            county_data["education_score"],
-            2
-        )
-    )
-
-    st.metric(
-        "Language",
-        round(
-            county_data["language_score"],
-            2
-        )
-    )
-
-    st.metric(
-        "Disability",
-        round(
-            county_data["disability_score"],
-            2
-        )
-    )
-
-    st.metric(
-        "Household",
-        round(
-            county_data["household_score"],
-            2
-        )
-    )
-
-    st.metric(
-        "Mobility",
-        round(
-            county_data["mobility_score"],
-            2
-        )
-    )
 
 # --------------------------------------------------
 # ABOUT
