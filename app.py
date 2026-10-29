@@ -136,8 +136,9 @@ with m2:
 with m3:
 
     st.metric(
-        "Projetced Civil Filings (Expected considering barrier scores)",
-        f"{round(county_data['predicted_civil_filings']):,}"
+        "Projected Civil Filings",
+        f"{round(county_data['predicted_civil_filings']):,}",
+        help="Expected civil filings based on the county's barrier profile."
     )
 
 with m4:
