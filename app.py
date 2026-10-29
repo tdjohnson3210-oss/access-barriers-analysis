@@ -133,7 +133,11 @@ with c4:
 st.divider()
 
 st.subheader(
-    "Transportation Risk Across Washington"
+    f"Transportation Risk Across Washington ({selected_year})"
+)
+
+st.caption(
+    f"Selected County: {selected_county}"
 )
 
 comparison_df = (
@@ -149,12 +153,21 @@ comparison_df["Barrier Category"] = (
     .apply(classify_score)
 )
 
+comparison_df["Selected"] = (
+    comparison_df["county"] == selected_county
+)
+
 fig = px.bar(
     comparison_df,
     x="transportation_score",
     y="county",
     orientation="h",
     color="transportation_risk",
+    pattern_shape="Selected",
+    pattern_shape_map={
+        True: "/",
+        False: ""
+    },
     color_discrete_map={
         "Very Low": "#2ca02c",
         "Low": "#98df8a",
@@ -163,12 +176,14 @@ fig = px.bar(
         "Very High": "#d62728"
     },
     hover_data={
-        "actual_civil_filings": True,
+        "actual_civil_filings": ":,.0f",
         "civil_rank": True,
         "population_actual": ":,.0f",
         "popdensity_actual": ":,.1f",
         "Barrier Category": True,
-        "transportation_score": False
+        "transportation_risk": True,
+        "transportation_score": False,
+        "Selected": False
     },
     height=700
 )
@@ -203,12 +218,17 @@ with left_col:
             "Metric": [
                 "Population",
                 "Population Density",
+                "Rurality",
                 "Transportation Risk",
                 "Civil Filing Rank"
             ],
             "Value": [
                 f"{int(county_data['population_actual']):,}",
-                f"{county_data['popdensity_actual']:.1f}",
+                f"{county_data['popdensity_actual']:.1f} people/sq mi",
+                county_data.get(
+                    "community_type",
+                    "Unavailable"
+                ),
                 county_data["transportation_risk"],
                 f"#{int(county_data['civil_rank'])}"
             ]
