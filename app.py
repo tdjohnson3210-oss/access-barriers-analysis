@@ -17,8 +17,8 @@ st.markdown("""
 [data-testid="stMetric"] {
     background-color: #111827;
     border: 1px solid #374151;
-    padding: 18px;
     border-radius: 12px;
+    padding: 18px;
 }
 
 [data-testid="stMetricValue"] {
@@ -64,8 +64,7 @@ def classify_score(score):
     elif score <= 1:
         return "High"
 
-    else:
-        return "Very High"
+    return "Very High"
 
 
 score_order = {
@@ -84,9 +83,9 @@ st.title(
     "Washington Access Barriers Dashboard"
 )
 
-c1, c2 = st.columns(2)
+filter_col1, filter_col2 = st.columns(2)
 
-with c1:
+with filter_col1:
 
     selected_year = st.selectbox(
         "Year",
@@ -98,7 +97,7 @@ with c1:
         ) - 1
     )
 
-with c2:
+with filter_col2:
 
     selected_county = st.selectbox(
         "County",
@@ -160,10 +159,10 @@ with m4:
     )
 
 # --------------------------------------------------
-# KEY INSIGHT
+# BARRIER CATEGORY CLASSIFICATIONS
 # --------------------------------------------------
 
-barrier_scores = {
+barrier_profile = {
     "Transportation": classify_score(
         county_data["transportation_score"]
     ),
@@ -188,16 +187,22 @@ barrier_scores = {
 }
 
 highest_barrier = max(
-    barrier_scores,
+    barrier_profile,
     key=lambda x: score_order[
-        barrier_scores[x]
+        barrier_profile[x]
     ]
 )
 
+# --------------------------------------------------
+# KEY FINDING
+# --------------------------------------------------
+
 st.info(
     f"{selected_county} is classified as "
-    f"{county_data['transportation_risk']} transportation risk. "
-    f"The county ranks #{int(county_data['civil_rank'])} statewide for civil filings and exhibits its strongest access challenges in {highest_barrier.lower()}."
+    f"{county_data['transportation_risk']} transportation risk and ranks "
+    f"#{int(county_data['civil_rank'])} statewide for civil filings. "
+    f"The strongest access barrier category is "
+    f"{highest_barrier.lower()}."
 )
 
 # --------------------------------------------------
@@ -223,21 +228,12 @@ comparison_df["Barrier Category"] = (
     .apply(classify_score)
 )
 
-comparison_df["Selected County"] = (
-    comparison_df["county"] == selected_county
-)
-
 fig = px.bar(
     comparison_df,
     x="transportation_score",
     y="county",
     orientation="h",
     color="transportation_risk",
-    pattern_shape="Selected County",
-    pattern_shape_map={
-        True: "/",
-        False: ""
-    },
     color_discrete_map={
         "Very Low": "#2ca02c",
         "Low": "#98df8a",
@@ -252,8 +248,7 @@ fig = px.bar(
         "civil_rank": True,
         "transportation_risk": True,
         "Barrier Category": True,
-        "transportation_score": False,
-        "Selected County": False
+        "transportation_score": False
     },
     height=700
 )
@@ -306,67 +301,4 @@ with left_col:
                     "community_type",
                     "Unavailable"
                 ),
-                county_data["transportation_risk"],
-                f"#{int(county_data['civil_rank'])}"
-            ]
-        }
-    )
-
-    st.dataframe(
-        context_df,
-        hide_index=True,
-        use_container_width=True
-    )
-
-with right_col:
-
-    st.subheader(
-        "Access Barrier Assessment"
-    )
-
-    assessment_df = pd.DataFrame(
-        {
-            "Barrier": list(
-                barrier_scores.keys()
-            ),
-            "Assessment": list(
-                barrier_scores.values()
-            )
-        }
-    )
-
-    st.dataframe(
-        assessment_df,
-        hide_index=True,
-        use_container_width=True
-    )
-
-# --------------------------------------------------
-# ABOUT
-# --------------------------------------------------
-
-with st.expander(
-    "About the Model"
-):
-
-    st.markdown(
-        """
-        ### Project Purpose
-
-        Identify and visualize access barriers across Washington communities.
-
-        ### Data Sources
-
-        ACS demographic and socioeconomic indicators, RUCA classifications, and civil filing data.
-
-        ### Methodology
-
-        Barrier scores were developed for transportation, digital access, education, language, disability, household, and mobility factors.
-
-        Linear regression was used to estimate expected civil filing activity. Transportation risk classifications were generated from transportation barrier indicators.
-
-        ### Intended Use
-
-        Support access-to-justice planning, research, and policy analysis across Washington State.
-        """
-    )
+                county_data["transportation_risk"
