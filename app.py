@@ -69,15 +69,18 @@ county_data = dashboard_df[
 # COUNTY OVERVIEW
 # --------------------------------------------------
 
-st.caption("COUNTY OVERVIEW")
+st.caption(
+    "COUNTY OVERVIEW"
+)
 
 st.subheader(
-    f"{selected_county} County Access Snapshot"
+    f"{selected_county} Access Snapshot"
 )
 
 col1, col2, col3, col4 = st.columns(4)
 
 with col1:
+
     st.metric(
         "Civil Filings",
         int(
@@ -86,12 +89,14 @@ with col1:
     )
 
 with col2:
+
     st.metric(
         "Transportation Risk",
         county_data["transportation_risk"]
     )
 
 with col3:
+
     st.metric(
         "Expected Filings",
         round(
@@ -100,6 +105,7 @@ with col3:
     )
 
 with col4:
+
     st.metric(
         "Statewide Rank",
         f"#{int(county_data['civil_rank'])}"
@@ -123,8 +129,9 @@ with map_col:
 
         counties = load_map()
 
-        # Most Census-derived GeoJSON files use NAME
-        counties["county"] = counties["NAME"] + " County"
+        counties["county"] = (
+            counties["NAMELSAD"]
+        )
 
         map_df = (
             dashboard_df[
@@ -152,12 +159,12 @@ with map_col:
                 "actual_civil_filings": True,
                 "civil_rank": True
             },
-            mapbox_style="carto-positron",
             center={
                 "lat": 47.4,
                 "lon": -120.7
             },
             zoom=5,
+            mapbox_style="carto-positron",
             opacity=0.7,
             color_continuous_scale="RdYlGn_r"
         )
@@ -179,7 +186,7 @@ with map_col:
     except Exception as e:
 
         st.error(
-            f"Map Error: {e}"
+            f"Map Error: {str(e)}"
         )
 
 with barrier_col:
@@ -205,6 +212,44 @@ with barrier_col:
     )
 
     st.metric(
+        "Education",
+        round(
+            county_data["education_score"],
+            2
+        )
+    )
+
+    st.metric(
+        "Language",
+        round(
+            county_data["language_score"],
+            2
+        )
+    )
+
+    st.metric(
+        "Disability",
+        round(
+            county_data["disability_score"],
+            2
+        )
+    )
+
+    st.metric(
+        "Household",
+        round(
+            county_data["household_score"],
+            2
+        )
+    )
+
+    st.metric(
+        "Mobility",
+        round(
+            county_data["mobility_score"],
+            2
+        )
+    )
 
 # --------------------------------------------------
 # ABOUT
