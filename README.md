@@ -1,25 +1,67 @@
-# Access Barrier and Civil Fillings Analysis
+# Access Barriers Analysis Dashboard
 
-This repository contains data, code, notebooks, and documentation used to examine transportation barriers, access-to-justice challenges, and civil court participation using American Community Survey (ACS), RUCA, and Washington civil court filing data.
+This repository contains the data, models, code, and documentation used to examine access-to-justice barriers across Washington State communities. The project combines demographic, socioeconomic, transportation, and court activity indicators to generate county-level access barrier assessments, transportation risk classifications, and projected civil filing estimates.
+
+https://access-barriers-analysis-2mwwrmwezsizgdy9mcs5u6.streamlit.app/
+
+## Dashboard
+
+The project includes an interactive Streamlit dashboard that allows users to:
+
+- Explore county-level transportation risk classifications
+- Compare counties across Washington State
+- Review projected civil filing estimates
+- Examine access barrier profiles
+- Analyze population, density, and rurality characteristics
+
+### Application Files
+
+```text
+app.py                     # Streamlit dashboard
+requirements.txt           # Application dependencies
+data_processed/
+└── dashboard_data.parquet # Dashboard dataset
+```
 
 ## Repository Structure
 
 ```text
 access-barriers-analysis/
-├── data_raw/              # Original source datasets
-├── data_processed/        # Processed and merged datasets
-├── notebooks/             # Jupyter notebooks
-├── scripts/               # Data preparation scripts
-├── metadata/              # Data dictionaries and documentation
-├── docs/                  # Project documentation
+
+├── app.py
+├── requirements.txt
+
+├── data_raw/
+│   └── Source datasets
+
+├── data_processed/
+│   ├── dashboard_data.parquet
+│   └── Processed modeling datasets
+
+├── notebooks/
+│   └── Data preparation, analysis, and modeling notebooks
+
+├── scripts/
+│   └── Data processing scripts
+
+├── metadata/
+│   └── Data dictionaries and supporting documentation
+
+├── docs/
+│   └── Project documentation
+
 └── README.md
 ```
 
-## Datasets
+## Data Sources
 
-### Primary Dataset
+The project incorporates data from:
 
-The primary dataset contains indicators related to:
+- American Community Survey (ACS)
+- Rural-Urban Commuting Area (RUCA) classifications
+- Washington State civil court filing data
+
+These sources were used to develop county-level measures of:
 
 - Transportation barriers
 - Digital access
@@ -30,116 +72,47 @@ The primary dataset contains indicators related to:
 - Residential mobility
 - Population and rurality characteristics
 
-### Secondary Dataset
+## Models
 
-The secondary dataset contains county-level court activity measures, including:
-
-- Civil filings
-- Self-represented litigant cases
-- Interpreter usage
-- Incoming and outgoing cases
-- Pending caseloads
-- Total dispositions
-
-## Loading the Primary Dataset
-
-```python
-import pandas as pd
-
-base_url = (
-    "https://raw.githubusercontent.com/"
-    "tdjohnson3210-oss/access-barriers-analysis/main/data_processed"
-)
-
-dfs = []
-
-for i in range(9):
-    dfs.append(
-        pd.read_parquet(
-            f"{base_url}/df_primary_part_{i}.parquet"
-        )
-    )
-
-df_primary = pd.concat(
-    dfs,
-    ignore_index=True
-)
-
-print(df_primary.shape)
-```
-
-## Loading the Secondary Dataset
-
-```python
-import pandas as pd
-
-url = (
-    "https://raw.githubusercontent.com/"
-    "tdjohnson3210-oss/access-barriers-analysis/main"
-)
-
-df_secondary = pd.read_parquet(
-    f"{url}/data_processed/df_secondary.parquet"
-)
-
-print(df_secondary.shape)
-```
-
-## Modeling Approach
-
-### Model 1: Civil Filings Regression
+### Civil Filings Model
 
 **Model Type:** Multiple Linear Regression
 
-**Target Variable**
-- Civil Filings
+**Purpose:** Estimate expected civil filing activity using access barrier indicators, population characteristics, and rurality measures.
 
-**Predictors**
-- Transportation Score
-- Digital Score
-- Education Score
-- Language Score
-- Disability Score
-- Household Score
-- Mobility Score
-- Population
-- Population Density
-- RUCA
+**Performance:**
 
-**Key Results**
 - R² = 0.945
 - MAE = 371
 - RMSE = 562
-- Population and rurality were significant predictors of civil filings.
-- Transportation barriers were not a statistically significant independent predictor after controlling for other variables.
 
----
-
-### Model 2: Transportation Risk Classification
+### Transportation Risk Model
 
 **Model Type:** Random Forest Classification
 
-**Target Variable**
-- Transportation Risk Category
+**Purpose:** Classify county-level transportation risk using access barrier indicators.
 
-**Predictors**
-- Digital Score
-- Education Score
-- Language Score
-- Disability Score
-- Household Score
-- Mobility Score
+**Performance:**
 
-**Key Results**
 - Accuracy = 75%
-- Digital barriers were the strongest predictor of transportation risk.
-- Education, household, and mobility barriers also contributed substantially to classification performance.
-- Most classification errors occurred between neighboring transportation risk categories.
 
 ## Key Findings
 
-- Transportation barriers were strongly associated with digital and educational barriers.
-- Transportation barriers did not independently predict civil filings after controlling for geographic and demographic factors.
-- Population and rurality were the strongest predictors of filing activity.
-- Transportation risk could be classified with 75% accuracy using other access-related barriers.
-- Transportation disadvantage appears to be part of a broader pattern of access-related challenges rather than an isolated barrier.
+- Population and rurality were strong predictors of civil filing activity.
+- Transportation barriers were associated with other access barriers but were not independently significant after controlling for demographic and geographic factors.
+- Transportation risk classifications could be predicted with approximately 75% accuracy.
+- Access barriers tend to occur as interconnected challenges rather than isolated conditions.
+
+## Running the Dashboard
+
+Install required packages:
+
+```bash
+pip install -r requirements.txt
+```
+
+Launch the dashboard:
+
+```bash
+streamlit run app.py
+```
