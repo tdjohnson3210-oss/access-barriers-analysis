@@ -2,8 +2,6 @@
 
 This repository contains the data, models, code, and documentation used to examine access-to-justice barriers across Washington State communities. The project combines demographic, socioeconomic, transportation, and court activity indicators to generate county-level access barrier assessments, transportation risk classifications, and projected civil filing estimates.
 
-https://access-barriers-analysis-2mwwrmwezsizgdy9mcs5u6.streamlit.app/
-
 ## Dashboard
 
 The project includes an interactive Streamlit dashboard that allows users to:
@@ -116,3 +114,5 @@ Launch the dashboard:
 ```bash
 streamlit run app.py
 ```
+
+Link to public-facing dashboard: https://access-barriers-analysis-2mwwrmwezsizgdy9mcs5u6.streamlit.app/
