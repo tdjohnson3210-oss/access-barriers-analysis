@@ -3,7 +3,7 @@ import pandas as pd
 import plotly.express as px
 
 st.set_page_config(
-    page_title="Access Barriers Analysis Dashboard",
+    page_title="Washington Access Barriers Dashboard",
     layout="wide"
 )
 
@@ -23,6 +23,27 @@ def load_data():
     return pd.read_parquet(url)
 
 dashboard_df = load_data()
+
+# --------------------------------------------------
+# HELPER FUNCTION
+# --------------------------------------------------
+
+def classify_score(score):
+
+    if score <= -1:
+        return "Very Low"
+
+    elif score <= -0.25:
+        return "Low"
+
+    elif score <= 0.25:
+        return "Moderate"
+
+    elif score <= 1:
+        return "High"
+
+    else:
+        return "Very High"
 
 # --------------------------------------------------
 # FILTERS
@@ -51,18 +72,16 @@ selected_county = st.selectbox(
     )
 )
 
-county_data = dashboard_df[
-    (dashboard_df["county"] == selected_county)
-    &
-    (dashboard_df["year"] == selected_year)
-].iloc[0]
-
 year_df = dashboard_df[
     dashboard_df["year"] == selected_year
-]
+].copy()
+
+county_data = year_df[
+    year_df["county"] == selected_county
+].iloc[0]
 
 # --------------------------------------------------
-# SNAPSHOT
+# COUNTY SNAPSHOT
 # --------------------------------------------------
 
 st.caption(
@@ -70,7 +89,7 @@ st.caption(
 )
 
 st.subheader(
-    f"{selected_county}"
+    selected_county
 )
 
 c1, c2, c3, c4 = st.columns(4)
@@ -125,6 +144,11 @@ comparison_df = (
     )
 )
 
+comparison_df["Barrier Category"] = (
+    comparison_df["transportation_score"]
+    .apply(classify_score)
+)
+
 fig = px.bar(
     comparison_df,
     x="transportation_score",
@@ -138,11 +162,15 @@ fig = px.bar(
         "High": "#ff7f0e",
         "Very High": "#d62728"
     },
-    hover_data=[
-        "actual_civil_filings",
-        "civil_rank"
-    ],
-    height=900
+    hover_data={
+        "actual_civil_filings": True,
+        "civil_rank": True,
+        "population_actual": ":,.0f",
+        "popdensity_actual": ":,.1f",
+        "Barrier Category": True,
+        "transportation_score": False
+    },
+    height=700
 )
 
 fig.update_layout(
@@ -157,87 +185,90 @@ st.plotly_chart(
 )
 
 # --------------------------------------------------
-# COUNTY BARRIER PROFILE
+# COUNTY DETAILS
 # --------------------------------------------------
 
 st.divider()
 
-st.subheader(
-    f"{selected_county} Barrier Profile"
-)
+left_col, right_col = st.columns(2)
 
-barrier_df = pd.DataFrame({
-    "Barrier": [
-        "Transportation",
-        "Digital",
-        "Education",
-        "Language",
-        "Disability",
-        "Household",
-        "Mobility"
-    ],
-    "Score": [
-        county_data["transportation_score"],
-        county_data["digital_score"],
-        county_data["education_score"],
-        county_data["language_score"],
-        county_data["disability_score"],
-        county_data["household_score"],
-        county_data["mobility_score"]
-    ]
-})
+with left_col:
 
-profile_fig = px.bar(
-    barrier_df,
-    x="Score",
-    y="Barrier",
-    orientation="h",
-    color="Score",
-    color_continuous_scale="RdYlGn_r",
-    text_auto=".2f"
-)
-
-profile_fig.update_layout(
-    height=500,
-    yaxis_title="",
-    xaxis_title="Barrier Score",
-    coloraxis_showscale=False
-)
-
-st.plotly_chart(
-    profile_fig,
-    use_container_width=True
-)
-
-# --------------------------------------------------
-# COUNTY COMPARISON TABLE
-# --------------------------------------------------
-
-st.divider()
-
-st.subheader(
-    "County Rankings"
-)
-
-ranking_df = (
-    year_df[
-        [
-            "county",
-            "transportation_risk",
-            "actual_civil_filings",
-            "civil_rank"
-        ]
-    ]
-    .sort_values(
-        "civil_rank"
+    st.subheader(
+        "County Characteristics"
     )
-)
 
-st.dataframe(
-    ranking_df,
-    use_container_width=True,
-    hide_index=True
-)
+    summary_df = pd.DataFrame(
+        {
+            "Metric": [
+                "Population",
+                "Population Density",
+                "Transportation Risk",
+                "Civil Filing Rank"
+            ],
+            "Value": [
+                f"{int(county_data['population_actual']):,}",
+                f"{county_data['popdensity_actual']:.1f}",
+                county_data["transportation_risk"],
+                f"#{int(county_data['civil_rank'])}"
+            ]
+        }
+    )
+
+    st.dataframe(
+        summary_df,
+        hide_index=True,
+        use_container_width=True
+    )
+
+with right_col:
+
+    st.subheader(
+        "Barrier Categories"
+    )
+
+    barrier_df = pd.DataFrame(
+        {
+            "Barrier": [
+                "Transportation",
+                "Digital",
+                "Education",
+                "Language",
+                "Disability",
+                "Household",
+                "Mobility"
+            ],
+            "Category": [
+                classify_score(
+                    county_data["transportation_score"]
+                ),
+                classify_score(
+                    county_data["digital_score"]
+                ),
+                classify_score(
+                    county_data["education_score"]
+                ),
+                classify_score(
+                    county_data["language_score"]
+                ),
+                classify_score(
+                    county_data["disability_score"]
+                ),
+                classify_score(
+                    county_data["household_score"]
+                ),
+                classify_score(
+                    county_data["mobility_score"]
+                )
+            ]
+        }
+    )
+
+    st.dataframe(
+        barrier_df,
+        hide_index=True,
+        use_container_width=True
+    )
 
 # --------------------------------------------------
 # ABOUT
