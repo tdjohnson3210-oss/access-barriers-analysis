@@ -8,6 +8,28 @@ st.set_page_config(
 )
 
 # --------------------------------------------------
+# STYLING
+# --------------------------------------------------
+
+st.markdown("""
+<style>
+
+[data-testid="stMetric"] {
+    background-color: #111827;
+    border: 1px solid #374151;
+    padding: 18px;
+    border-radius: 12px;
+}
+
+[data-testid="stMetricValue"] {
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+# --------------------------------------------------
 # LOAD DATA
 # --------------------------------------------------
 
@@ -25,7 +47,7 @@ def load_data():
 dashboard_df = load_data()
 
 # --------------------------------------------------
-# HELPER FUNCTION
+# HELPER FUNCTIONS
 # --------------------------------------------------
 
 def classify_score(score):
@@ -45,6 +67,15 @@ def classify_score(score):
     else:
         return "Very High"
 
+
+score_order = {
+    "Very Low": 1,
+    "Low": 2,
+    "Moderate": 3,
+    "High": 4,
+    "Very High": 5
+}
+
 # --------------------------------------------------
 # FILTERS
 # --------------------------------------------------
@@ -53,24 +84,30 @@ st.title(
     "Washington Access Barriers Dashboard"
 )
 
-selected_year = st.selectbox(
-    "Year",
-    sorted(
-        dashboard_df["year"].unique()
-    ),
-    index=len(
-        dashboard_df["year"].unique()
-    ) - 1
-)
+c1, c2 = st.columns(2)
 
-selected_county = st.selectbox(
-    "County",
-    sorted(
-        dashboard_df[
-            dashboard_df["year"] == selected_year
-        ]["county"].unique()
+with c1:
+
+    selected_year = st.selectbox(
+        "Year",
+        sorted(
+            dashboard_df["year"].unique()
+        ),
+        index=len(
+            dashboard_df["year"].unique()
+        ) - 1
     )
-)
+
+with c2:
+
+    selected_county = st.selectbox(
+        "County",
+        sorted(
+            dashboard_df[
+                dashboard_df["year"] == selected_year
+            ]["county"].unique()
+        )
+    )
 
 year_df = dashboard_df[
     dashboard_df["year"] == selected_year
@@ -92,39 +129,76 @@ st.subheader(
     selected_county
 )
 
-c1, c2, c3, c4 = st.columns(4)
+m1, m2, m3, m4 = st.columns(4)
 
-with c1:
+with m1:
 
     st.metric(
         "Civil Filings",
-        int(
-            county_data["actual_civil_filings"]
-        )
+        f"{int(county_data['actual_civil_filings']):,}"
     )
 
-with c2:
+with m2:
 
     st.metric(
         "Transportation Risk",
         county_data["transportation_risk"]
     )
 
-with c3:
+with m3:
 
     st.metric(
         "Expected Filings",
-        round(
-            county_data["predicted_civil_filings"]
-        )
+        f"{round(county_data['predicted_civil_filings']):,}"
     )
 
-with c4:
+with m4:
 
     st.metric(
         "Statewide Rank",
         f"#{int(county_data['civil_rank'])}"
     )
+
+# --------------------------------------------------
+# KEY INSIGHT
+# --------------------------------------------------
+
+barrier_scores = {
+    "Transportation": classify_score(
+        county_data["transportation_score"]
+    ),
+    "Digital": classify_score(
+        county_data["digital_score"]
+    ),
+    "Education": classify_score(
+        county_data["education_score"]
+    ),
+    "Language": classify_score(
+        county_data["language_score"]
+    ),
+    "Disability": classify_score(
+        county_data["disability_score"]
+    ),
+    "Household": classify_score(
+        county_data["household_score"]
+    ),
+    "Mobility": classify_score(
+        county_data["mobility_score"]
+    )
+}
+
+highest_barrier = max(
+    barrier_scores,
+    key=lambda x: score_order[
+        barrier_scores[x]
+    ]
+)
+
+st.info(
+    f"{selected_county} is classified as "
+    f"{county_data['transportation_risk']} transportation risk. "
+    f"The county ranks #{int(county_data['civil_rank'])} statewide for civil filings and exhibits its strongest access challenges in {highest_barrier.lower()}."
+)
 
 # --------------------------------------------------
 # STATEWIDE COMPARISON
@@ -133,11 +207,7 @@ with c4:
 st.divider()
 
 st.subheader(
-    f"Transportation Risk Across Washington ({selected_year})"
-)
-
-st.caption(
-    f"Selected County: {selected_county}"
+    "Washington Transportation Risk"
 )
 
 comparison_df = (
@@ -153,7 +223,7 @@ comparison_df["Barrier Category"] = (
     .apply(classify_score)
 )
 
-comparison_df["Selected"] = (
+comparison_df["Selected County"] = (
     comparison_df["county"] == selected_county
 )
 
@@ -163,7 +233,7 @@ fig = px.bar(
     y="county",
     orientation="h",
     color="transportation_risk",
-    pattern_shape="Selected",
+    pattern_shape="Selected County",
     pattern_shape_map={
         True: "/",
         False: ""
@@ -177,20 +247,27 @@ fig = px.bar(
     },
     hover_data={
         "actual_civil_filings": ":,.0f",
-        "civil_rank": True,
         "population_actual": ":,.0f",
         "popdensity_actual": ":,.1f",
-        "Barrier Category": True,
+        "civil_rank": True,
         "transportation_risk": True,
+        "Barrier Category": True,
         "transportation_score": False,
-        "Selected": False
+        "Selected County": False
     },
     height=700
 )
 
+fig.add_vline(
+    x=county_data["transportation_score"],
+    line_width=3,
+    line_dash="dash",
+    line_color="white"
+)
+
 fig.update_layout(
     yaxis_title="",
-    xaxis_title="Transportation Barrier Score",
+    xaxis_title="Relative Transportation Risk",
     legend_title="Risk Category"
 )
 
@@ -210,10 +287,10 @@ left_col, right_col = st.columns(2)
 with left_col:
 
     st.subheader(
-        "County Characteristics"
+        "County Context"
     )
 
-    summary_df = pd.DataFrame(
+    context_df = pd.DataFrame(
         {
             "Metric": [
                 "Population",
@@ -236,7 +313,7 @@ with left_col:
     )
 
     st.dataframe(
-        summary_df,
+        context_df,
         hide_index=True,
         use_container_width=True
     )
@@ -244,48 +321,22 @@ with left_col:
 with right_col:
 
     st.subheader(
-        "Barrier Categories"
+        "Access Barrier Assessment"
     )
 
-    barrier_df = pd.DataFrame(
+    assessment_df = pd.DataFrame(
         {
-            "Barrier": [
-                "Transportation",
-                "Digital",
-                "Education",
-                "Language",
-                "Disability",
-                "Household",
-                "Mobility"
-            ],
-            "Category": [
-                classify_score(
-                    county_data["transportation_score"]
-                ),
-                classify_score(
-                    county_data["digital_score"]
-                ),
-                classify_score(
-                    county_data["education_score"]
-                ),
-                classify_score(
-                    county_data["language_score"]
-                ),
-                classify_score(
-                    county_data["disability_score"]
-                ),
-                classify_score(
-                    county_data["household_score"]
-                ),
-                classify_score(
-                    county_data["mobility_score"]
-                )
-            ]
+            "Barrier": list(
+                barrier_scores.keys()
+            ),
+            "Assessment": list(
+                barrier_scores.values()
+            )
         }
     )
 
     st.dataframe(
-        barrier_df,
+        assessment_df,
         hide_index=True,
         use_container_width=True
     )
