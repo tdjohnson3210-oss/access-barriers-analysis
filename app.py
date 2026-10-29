@@ -7,10 +7,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# --------------------------------------------------
-# STYLING
-# --------------------------------------------------
-
+# KPI styling
 st.markdown("""
 <style>
 
@@ -29,9 +26,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# --------------------------------------------------
-# LOAD DATA
-# --------------------------------------------------
+# Load data
 
 @st.cache_data
 def load_data():
@@ -46,9 +41,7 @@ def load_data():
 
 dashboard_df = load_data()
 
-# --------------------------------------------------
-# HELPER FUNCTIONS
-# --------------------------------------------------
+# Scoring
 
 def classify_score(score):
 
@@ -75,9 +68,7 @@ score_order = {
     "Very High": 5
 }
 
-# --------------------------------------------------
-# FILTERS
-# --------------------------------------------------
+# Filters
 
 st.title(
     "Washington Access Barriers Dashboard"
@@ -116,9 +107,7 @@ county_data = year_df[
     year_df["county"] == selected_county
 ].iloc[0]
 
-# --------------------------------------------------
-# COUNTY SNAPSHOT
-# --------------------------------------------------
+# County snapshot
 
 st.caption(
     "COUNTY SNAPSHOT"
@@ -158,9 +147,7 @@ with m4:
         f"#{int(county_data['civil_rank'])}"
     )
 
-# --------------------------------------------------
-# BARRIER CATEGORY CLASSIFICATIONS
-# --------------------------------------------------
+# Barrier categories
 
 barrier_profile = {
     "Transportation": classify_score(
@@ -193,9 +180,7 @@ highest_barrier = max(
     ]
 )
 
-# --------------------------------------------------
-# KEY FINDING
-# --------------------------------------------------
+# Key findings bar
 
 st.info(
     f"{selected_county} is classified as "
@@ -205,9 +190,7 @@ st.info(
     f"{highest_barrier.lower()}."
 )
 
-# --------------------------------------------------
-# STATEWIDE COMPARISON
-# --------------------------------------------------
+# Statewide comparisons
 
 st.divider()
 
@@ -271,9 +254,7 @@ st.plotly_chart(
     use_container_width=True
 )
 
-# --------------------------------------------------
-# COUNTY DETAILS
-# --------------------------------------------------
+# County details
 
 st.divider()
 
@@ -336,9 +317,7 @@ with right_col:
         use_container_width=True
     )
 
-# --------------------------------------------------
-# ABOUT
-# --------------------------------------------------
+# About
 
 with st.expander(
     "About the Model"
@@ -364,6 +343,6 @@ with st.expander(
 
         ### Intended Use
 
-        Support access-to-justice planning, research, and policy analysis across Washington State.
+        Support access-to-justice planning further related analysis across Washington State.
         """
     )
